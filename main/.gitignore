@@ -33,5 +33,3 @@ build/
 firebase-debug.log
 .firebaserc
 
-#implimentation files
-.implementation_plan.md
