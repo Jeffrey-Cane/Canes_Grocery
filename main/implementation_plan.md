@@ -1,4 +1,4 @@
-# CANE's STORE — Grocery Ecommerce Site Launch Plan
+# GROCERY STORE — Grocery Ecommerce Site Launch Plan
 
 A fast, launchable grocery storefront built with vanilla HTML/CSS/JS.
 No backend required — product data is stored in a local JSON file,
@@ -10,7 +10,7 @@ and the cart is persisted via `localStorage`.
 
 | Field | Value |
 |---|---|
-| Store Name | CANE's STORE |
+| Store Name | GROCERY STORE |
 | Currency | Kenya Shillings (KSh) |
 | Categories | Fruits, Vegetables, Dairy, Bakery, Snacks, Drinks |
 

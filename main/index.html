@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="CANE's STORE — Fresh groceries delivered to your door in Nairobi. Fruits, vegetables, dairy, bakery, snacks & drinks.">
-  <title>CANE's STORE — Fresh Groceries Delivered</title>
+  <meta name="description" content="GROCERY STORE — Fresh groceries delivered to your door in Nairobi. Fruits, vegetables, dairy, bakery, snacks & drinks.">
+  <title>GROCERY STORE — Fresh Groceries Delivered</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="style2.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
@@ -15,13 +15,13 @@
   <nav class="navbar" id="navbar">
     <a href="#" class="navbar__logo">
       <div class="navbar__logo-icon">C</div>
-      CANE's STORE
+      GROCERY STORE
     </a>
     <ul class="navbar__links">
       <li><a href="#" class="active">Home</a></li>
       <li><a href="#products-section">Shop</a></li>
       <li><a href="#features">About</a></li>
-      <li><a href="#footer">Contact</a></li>
+      <li><a href="contact.html">Contact</a></li>
     </ul>
     <div class="navbar__actions">
       <button class="navbar__search-toggle" id="search-toggle" aria-label="Search">🔍</button>
@@ -227,7 +227,7 @@
   <footer class="footer" id="footer">
     <div class="footer__grid">
       <div>
-        <div class="footer__brand">CANE's STORE</div>
+        <div class="footer__brand">GROCERY STORE</div>
         <p class="footer__description">Your trusted online grocery store in Nairobi. Fresh produce, quality products, and fast delivery — every single day.</p>
       </div>
       <div>
@@ -243,9 +243,9 @@
         <h3 class="footer__heading">Company</h3>
         <ul class="footer__links">
           <li><a href="#">About Us</a></li>
-          <li><a href="#">Careers</a></li>
+          <li><a href="contact.html">Contact</a></li>
           <li><a href="#">Blog</a></li>
-          <li><a href="#">Contact</a></li>
+          <li><a href="#">Careers</a></li>
         </ul>
       </div>
       <div>
@@ -259,13 +259,15 @@
       </div>
     </div>
     <div class="footer__bottom">
-      <span>© 2026 CANE's STORE. All rights reserved.</span>
+      <span>© 2026 GROCERY STORE. All rights reserved.</span>
       <span>Made with ♥ in Nairobi</span>
     </div>
   </footer>
 
   <script src="https://js.paystack.co/v1/inline.js"></script>
-  <script src="auth.js"></script>
-  <script src="app.js"></script>
+
+  <!-- Backend API Auth (no external Firebase needed) -->
+  <script defer src="auth.js"></script>
+  <script defer src="app.js"></script>
 </body>
 </html>

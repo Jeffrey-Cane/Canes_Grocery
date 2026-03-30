@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="CANE's STORE — Login or create an account">
-  <title>Login — CANE's STORE</title>
+  <meta name="description" content="GROCERY STORE — Login or create an account">
+  <title>Login — GROCERY STORE</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="style2.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
@@ -59,7 +59,7 @@
       <div class="auth-card__header">
         <a href="index.html" class="auth-card__logo">
           <div class="auth-card__logo-icon">C</div>
-          <span class="auth-card__logo-text">CANE's STORE</span>
+          <span class="auth-card__logo-text">GROCERY STORE</span>
         </a>
         <h1 class="auth-card__title" id="auth-title">Welcome Back</h1>
         <p class="auth-card__subtitle" id="auth-subtitle">Sign in to your account to continue shopping</p>
@@ -124,13 +124,20 @@
     </div>
   </div>
 
-  <script src="auth.js"></script>
+  <!-- Backend API Auth (no external Firebase needed) -->
+  <script defer src="auth.js"></script>
   <script>
-    // Redirect if already logged in
-    if (CaneAuth.isLoggedIn()) {
-      var s = CaneAuth.getSession();
-      window.location.href = s.role === 'admin' ? 'admin.html' : 'index.html';
-    }
+    // Wait for all scripts to load before running
+    window.addEventListener('load', function() {
+      CaneAuth.init().then(function() {
+        if (CaneAuth.isLoggedIn()) {
+          var s = CaneAuth.getSession();
+          window.location.href = s.role === 'admin' ? 'admin.html' : 'index.html';
+        }
+      }).catch(function(err) {
+        console.error('Init failed:', err);
+      });
+    });
 
     function switchTab(tab) {
       document.querySelectorAll('.auth-tab').forEach(function (t) { t.classList.remove('active'); });
@@ -165,29 +172,63 @@
     }
 
     // Login
-    document.getElementById('form-login').addEventListener('submit', function (e) {
+    document.getElementById('form-login').addEventListener('submit', async function (e) {
       e.preventDefault();
       var email = document.getElementById('login-email').value.trim();
       var password = document.getElementById('login-password').value;
+      var loginBtn = document.getElementById('login-btn');
+
       if (!email || !password) { showError('login-error', 'Please fill in all fields'); return; }
-      var result = CaneAuth.login(email, password);
-      if (!result.success) { showError('login-error', result.message); return; }
-      window.location.href = result.user.role === 'admin' ? 'admin.html' : 'index.html';
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Signing in...';
+
+      try {
+        var result = await CaneAuth.login(email, password);
+        if (!result.success) {
+          showError('login-error', result.message);
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Sign In';
+          return;
+        }
+        window.location.href = result.user.role === 'admin' ? 'admin.html' : 'index.html';
+      } catch (error) {
+        showError('login-error', error.message || 'An error occurred');
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Sign In';
+      }
     });
 
     // Register
-    document.getElementById('form-register').addEventListener('submit', function (e) {
+    document.getElementById('form-register').addEventListener('submit', async function (e) {
       e.preventDefault();
       var name = document.getElementById('register-name').value.trim();
       var email = document.getElementById('register-email').value.trim();
       var password = document.getElementById('register-password').value;
       var confirm = document.getElementById('register-confirm').value;
+      var registerBtn = document.getElementById('register-btn');
+
       if (!name || !email || !password || !confirm) { showError('register-error', 'Please fill in all fields'); return; }
       if (password.length < 6) { showError('register-error', 'Password must be at least 6 characters'); return; }
       if (password !== confirm) { showError('register-error', 'Passwords do not match'); return; }
-      var result = CaneAuth.register(name, email, password);
-      if (!result.success) { showError('register-error', result.message); return; }
-      window.location.href = 'index.html';
+
+      registerBtn.disabled = true;
+      registerBtn.textContent = 'Creating Account...';
+
+      try {
+        var result = await CaneAuth.register(name, email, password);
+        if (!result.success) {
+          showError('register-error', result.message);
+          registerBtn.disabled = false;
+          registerBtn.textContent = 'Create Account';
+          return;
+        }
+        window.location.href = 'index.html';
+      } catch (error) {
+        showError('register-error', error.message || 'An error occurred');
+        registerBtn.disabled = false;
+        registerBtn.textContent = 'Create Account';
+      }
     });
   </script>
 </body>

@@ -1,0 +1,12 @@
+{
+  "name": "canes-grocery",
+  "version": "1.0.0",
+  "description": "CANE's Grocery Store",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000"
+  },
+  "dependencies": {
+    "firebase": "^10.7.0"
+  }
+}

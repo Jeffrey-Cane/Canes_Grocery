@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Contact GROCERY STORE — Get in touch with us for inquiries, feedback, and support">
+  <title>Contact Us — GROCERY STORE</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style2.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
+  <style>
+    .contact-hero {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, rgba(214, 140, 94, 0.8) 100%);
+      color: white;
+      padding: 60px 40px;
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    .contact-hero h1 {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+    .contact-hero p {
+      font-size: 1.1rem;
+      opacity: 0.95;
+    }
+    .contact-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 60px;
+    }
+    @media (max-width: 768px) {
+      .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+    }
+    .contact-info {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+    .info-card {
+      background: var(--bg-card);
+      padding: 24px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+    }
+    .info-card h3 {
+      font-size: 1.1rem;
+      color: var(--text-heading);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .info-card p {
+      color: var(--text-body);
+      line-height: 1.6;
+      margin: 6px 0;
+    }
+    .info-card a {
+      color: var(--accent-primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .info-card a:hover {
+      text-decoration: underline;
+    }
+    .contact-form {
+      background: var(--bg-card);
+      padding: 32px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+    }
+    .contact-form h2 {
+      font-size: 1.5rem;
+      color: var(--text-heading);
+      margin-bottom: 24px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-heading);
+      margin-bottom: 8px;
+    }
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--accent-secondary);
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: var(--text-heading);
+      background: var(--bg-primary);
+      transition: border-color 0.3s ease;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent-primary);
+      outline: none;
+    }
+    .form-group textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+    .form-submit {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent-primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .form-submit:hover {
+      background: var(--accent-primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(214, 140, 94, 0.35);
+    }
+    .form-message {
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      display: none;
+    }
+    .form-message.success {
+      display: block;
+      background: rgba(107, 155, 107, 0.1);
+      color: #6B9B6B;
+      border: 1px solid rgba(107, 155, 107, 0.3);
+    }
+    .form-message.error {
+      display: block;
+      background: rgba(199, 92, 92, 0.1);
+      color: #C75C5C;
+      border: 1px solid rgba(199, 92, 92, 0.3);
+    }
+    .hours-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+    .hours-day {
+      font-weight: 600;
+      color: var(--text-heading);
+    }
+    .hours-time {
+      color: var(--text-body);
+    }
+    .social-links {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .social-link {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-secondary);
+      color: var(--accent-primary);
+      border-radius: 50%;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 1.2rem;
+    }
+    .social-link:hover {
+      background: var(--accent-primary);
+      color: white;
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <a href="index.html" class="navbar__logo">
+      <div class="navbar__logo-icon">G</div>
+      GROCERY STORE
+    </a>
+    <ul class="navbar__links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="index.html#products-section">Shop</a></li>
+      <li><a href="index.html#features">About</a></li>
+      <li><a href="contact.html" class="active">Contact</a></li>
+    </ul>
+    <div class="navbar__actions">
+      <button class="navbar__search-toggle" id="search-toggle" aria-label="Search">🔍</button>
+      <button class="navbar__cart-btn" id="cart-btn" aria-label="Cart">
+        🛒
+        <span class="navbar__cart-badge" id="cart-badge">0</span>
+      </button>
+      <a href="login.html" class="navbar__cart-btn" id="user-btn" aria-label="Account" title="Account">👤</a>
+      <button class="navbar__mobile-toggle" id="mobile-toggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- CONTACT HERO -->
+  <section class="contact-hero">
+    <h1>Get In Touch</h1>
+    <p>We'd love to hear from you! Reach out to us with any questions or feedback.</p>
+  </section>
+
+  <!-- CONTACT CONTAINER -->
+  <div class="contact-container">
+    <div class="contact-grid">
+      <!-- CONTACT INFO -->
+      <div class="contact-info">
+        <!-- PHONE -->
+        <div class="info-card">
+          <h3>📞 Call Us</h3>
+          <p><a href="tel:+254712345678">+254 712 345 678</a></p>
+          <p><a href="tel:+254701234567">+254 701 234 567</a></p>
+          <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 12px;">Monday - Sunday: 8:00 AM - 8:00 PM</p>
+        </div>
+
+        <!-- EMAIL -->
+        <div class="info-card">
+          <h3>📧 Email Us</h3>
+          <p><a href="mailto:support@grocerystore.com">support@grocerystore.com</a></p>
+          <p><a href="mailto:orders@grocerystore.com">orders@grocerystore.com</a></p>
+          <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 12px;">Response time: Within 2 hours</p>
+        </div>
+
+        <!-- LOCATION -->
+        <div class="info-card">
+          <h3>📍 Visit Us</h3>
+          <p>Grocery Store Hub<br>Westlands, Nairobi<br>Kenya</p>
+          <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 12px;">
+            <a href="https://maps.google.com" target="_blank">📌 Get Directions</a>
+          </p>
+        </div>
+
+        <!-- BUSINESS HOURS -->
+        <div class="info-card">
+          <h3>🕐 Business Hours</h3>
+          <div class="hours-grid">
+            <div class="hours-day">Monday - Friday:</div>
+            <div class="hours-time">8:00 AM - 8:00 PM</div>
+            <div class="hours-day">Saturday:</div>
+            <div class="hours-time">9:00 AM - 7:00 PM</div>
+            <div class="hours-day">Sunday:</div>
+            <div class="hours-time">10:00 AM - 6:00 PM</div>
+          </div>
+        </div>
+
+        <!-- SOCIAL MEDIA -->
+        <div class="info-card">
+          <h3>📱 Follow Us</h3>
+          <p>Connect with GROCERY STORE on social media</p>
+          <div class="social-links">
+            <a href="#" class="social-link" title="Facebook">f</a>
+            <a href="#" class="social-link" title="Twitter">𝕏</a>
+            <a href="#" class="social-link" title="Instagram">📷</a>
+            <a href="#" class="social-link" title="WhatsApp">💬</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTACT FORM -->
+      <div class="contact-form">
+        <h2>Send us a Message</h2>
+        <div id="form-message" class="form-message"></div>
+
+        <form id="contact-form">
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" required placeholder="Your name">
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required placeholder="your@email.com">
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone Number (Optional)</label>
+            <input type="tel" id="phone" name="phone" placeholder="+254 712 345 678">
+          </div>
+
+          <div class="form-group">
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" name="subject" required placeholder="What is this about?">
+          </div>
+
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" required placeholder="Tell us how we can help..."></textarea>
+          </div>
+
+          <button type="submit" class="form-submit">Send Message</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer" id="footer">
+    <div class="footer__grid">
+      <div>
+        <div class="footer__brand">GROCERY STORE</div>
+        <p class="footer__description">Your trusted online grocery store in Nairobi. Fresh produce, quality products, and fast delivery — every single day.</p>
+      </div>
+      <div>
+        <h3 class="footer__heading">Shop</h3>
+        <ul class="footer__links">
+          <li><a href="index.html#products-section">Fruits</a></li>
+          <li><a href="index.html#products-section">Vegetables</a></li>
+          <li><a href="index.html#products-section">Dairy</a></li>
+          <li><a href="index.html#products-section">Bakery</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer__heading">Company</h3>
+        <ul class="footer__links">
+          <li><a href="index.html">About Us</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Careers</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer__heading">Support</h3>
+        <ul class="footer__links">
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">Returns</a></li>
+          <li><a href="#">Delivery Info</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 GROCERY STORE. All rights reserved.</span>
+      <span>Made with ♥ in Nairobi</span>
+    </div>
+  </footer>
+
+  <!-- BACKEND API AUTH -->
+  <script defer src="auth.js"></script>
+  <script>
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof CaneAuth !== 'undefined' && CaneAuth.init) {
+        CaneAuth.init().then(() => {
+          updateUserButton();
+        });
+      }
+    });
+
+    // Update user button if logged in
+    function updateUserButton() {
+      var btn = document.getElementById('user-btn');
+      if (!btn || typeof CaneAuth === 'undefined') return;
+
+      if (CaneAuth.isLoggedIn()) {
+        var s = CaneAuth.getSession();
+        btn.textContent = (s.name || 'U').split(' ')[0];
+        btn.title = s.name + ' (' + s.role + ')';
+        btn.style.fontSize = '.78rem';
+        btn.style.fontWeight = '600';
+        btn.style.width = 'auto';
+        btn.style.padding = '0 14px';
+        btn.href = '#';
+        btn.onclick = function(e) {
+          e.preventDefault();
+          window.location.href = 'account.html';
+        };
+      }
+    }
+
+    // Contact form handler
+    document.getElementById('contact-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      var name = document.getElementById('name').value.trim();
+      var email = document.getElementById('email').value.trim();
+      var phone = document.getElementById('phone').value.trim();
+      var subject = document.getElementById('subject').value.trim();
+      var message = document.getElementById('message').value.trim();
+
+      if (!name || !email || !subject || !message) {
+        showMessage('Please fill in all required fields', 'error');
+        return;
+      }
+
+      // Simulate form submission (in production, send to backend)
+      var btn = document.querySelector('.form-submit');
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+
+      // Simulate delay
+      setTimeout(function() {
+        showMessage('✓ Thank you! Your message has been sent. We\'ll get back to you soon.', 'success');
+        document.getElementById('contact-form').reset();
+        btn.disabled = false;
+        btn.textContent = 'Send Message';
+      }, 1000);
+    });
+
+    function showMessage(msg, type) {
+      var el = document.getElementById('form-message');
+      el.textContent = msg;
+      el.className = 'form-message ' + type;
+      setTimeout(function() {
+        el.className = 'form-message';
+      }, 5000);
+    }
+
+    // Mobile navbar toggle
+    document.getElementById('mobile-toggle').addEventListener('click', function() {
+      var links = document.querySelector('.navbar__links');
+      if (links) links.classList.toggle('active');
+    });
+  </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 /* ============================================
-   CANE's STORE — Main Application Logic
+   GROCERY STORE — Main Application Logic
    ============================================ */
 (function () {
   'use strict';
@@ -22,6 +22,11 @@
     bindCheckout();
     bindCategoryFilters();
     animateOnScroll();
+
+    // Wait for CaneAuth to initialize before updating user button
+    if (typeof CaneAuth !== 'undefined' && CaneAuth.init) {
+      await CaneAuth.init();
+    }
     updateUserButton();
   });
 
@@ -36,15 +41,47 @@
       btn.style.fontWeight = '600';
       btn.style.width = 'auto';
       btn.style.padding = '0 14px';
+
+      // Create dropdown menu
+      var existingMenu = document.getElementById('user-dropdown-menu');
+      if (existingMenu) existingMenu.remove();
+
+      var menu = document.createElement('div');
+      menu.id = 'user-dropdown-menu';
+      menu.style.cssText = 'position:absolute;top:60px;right:20px;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:220px;z-index:1000;display:none;overflow:hidden';
+
+      var html = '<div style="padding:12px 16px;border-bottom:1px solid #eee">' +
+                 '<div style="font-weight:600;color:#333;margin-bottom:2px">' + s.name + '</div>' +
+                 '<div style="font-size:.85rem;color:#666">' + s.email + '</div>' +
+                 '</div>';
+
       if (s.role === 'admin') {
-        btn.href = 'admin.html';
-      } else {
-        btn.href = '#';
-        btn.onclick = function (e) {
-          e.preventDefault();
-          if (confirm('Sign out of ' + s.email + '?')) CaneAuth.logout();
-        };
+        html += '<a href="admin.html" style="display:block;padding:10px 16px;color:#333;text-decoration:none;border-bottom:1px solid #eee;font-size:.9rem">📊 Admin Dashboard</a>';
       }
+
+      html += '<a href="account.html" style="display:block;padding:10px 16px;color:#333;text-decoration:none;border-bottom:1px solid #eee;font-size:.9rem">👤 My Account</a>';
+
+      html += '<button onclick="CaneAuth.logout()" style="width:100%;padding:10px 16px;border:none;background:none;color:#C75C5C;text-align:left;cursor:pointer;font-size:.9rem;font-family:inherit">' +
+              '🚪 Sign Out</button>';
+
+      menu.innerHTML = html;
+      document.body.appendChild(menu);
+
+      // Toggle menu on click
+      btn.style.cursor = 'pointer';
+      btn.onclick = function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var isVisible = menu.style.display === 'block';
+        menu.style.display = isVisible ? 'none' : 'block';
+      };
+
+      // Close menu when clicking outside
+      document.addEventListener('click', function (e) {
+        if (e.target !== btn && !menu.contains(e.target)) {
+          menu.style.display = 'none';
+        }
+      });
     }
   }
 
@@ -434,7 +471,7 @@
     var conf = $('#confirmation-view');
     conf.style.display = 'block';
     var payLabel = method === 'paystack' ? 'Payment confirmed via Paystack' : 'Cash on Delivery — pay on arrival';
-    conf.innerHTML = '<div class="confirmation"><div class="confirmation__icon">✓</div><h2 class="confirmation__title">Order Placed!</h2><p class="confirmation__message">Thank you for shopping at CANE\'s STORE</p><p class="confirmation__order-id">Reference: ' + refId + '</p><p class="confirmation__message" style="font-size:.85rem;margin-top:-4px">' + payLabel + '</p><button class="btn btn--primary" onclick="document.getElementById(\'modal-overlay\').classList.remove(\'active\');document.body.style.overflow=\'\';location.reload();">Continue Shopping</button></div>';
+    conf.innerHTML = '<div class="confirmation"><div class="confirmation__icon">✓</div><h2 class="confirmation__title">Order Placed!</h2><p class="confirmation__message">Thank you for shopping at GROCERY STORE</p><p class="confirmation__order-id">Reference: ' + refId + '</p><p class="confirmation__message" style="font-size:.85rem;margin-top:-4px">' + payLabel + '</p><button class="btn btn--primary" onclick="document.getElementById(\'modal-overlay\').classList.remove(\'active\');document.body.style.overflow=\'\';location.reload();">Continue Shopping</button></div>';
     $('#modal-title').textContent = 'Confirmation';
   }
 

@@ -1,152 +1,240 @@
 /* ============================================
-   CANE's STORE — Authentication Logic
-   localStorage-based auth for demo purposes
+   GROCERY STORE — Authentication (Backend API)
+   Calls Node.js backend instead of Firebase
    ============================================ */
 (function () {
   'use strict';
 
-  var USERS_KEY = 'cane_users';
-  var SESSION_KEY = 'cane_session';
-  var ORDERS_KEY = 'cane_orders';
+  const API_URL = 'http://localhost:3000/api';
+  let token = null;
+  let currentUser = null;
 
-  // Default admin account
-  var DEFAULT_ADMIN = {
-    id: 'admin-001',
-    name: 'Admin',
-    email: 'admin@canesstore.com',
-    password: 'admin123',
-    role: 'admin',
-    createdAt: new Date().toISOString()
-  };
-
-  // Initialize default users if none exist
-  function initUsers() {
-    var users = getUsers();
-    if (users.length === 0) {
-      users.push(DEFAULT_ADMIN);
-      localStorage.setItem(USERS_KEY, JSON.stringify(users));
-    }
-    // Ensure admin always exists
-    var adminExists = users.some(function (u) { return u.role === 'admin'; });
-    if (!adminExists) {
-      users.push(DEFAULT_ADMIN);
-      localStorage.setItem(USERS_KEY, JSON.stringify(users));
-    }
-  }
-
-  function getUsers() {
-    try {
-      return JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-    } catch (e) {
-      return [];
-    }
-  }
-
-  function getSession() {
-    try {
-      return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function setSession(user) {
-    var session = { id: user.id, name: user.name, email: user.email, role: user.role };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-  }
-
-  function clearSession() {
-    localStorage.removeItem(SESSION_KEY);
+  // Load token from localStorage on init
+  function loadToken() {
+    return new Promise((resolve) => {
+      token = localStorage.getItem('cane_token');
+      if (token) {
+        getMe().then(() => resolve()).catch(() => resolve());
+      } else {
+        resolve();
+      }
+    });
   }
 
   function login(email, password) {
-    var users = getUsers();
-    var user = users.find(function (u) {
-      return u.email.toLowerCase() === email.toLowerCase() && u.password === password;
-    });
-    if (!user) return { success: false, message: 'Invalid email or password' };
-    setSession(user);
-    return { success: true, user: user };
+    return fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          token = data.token;
+          currentUser = data.user;
+          localStorage.setItem('cane_token', token);
+          console.log('✓ Login successful');
+          return data;
+        }
+        return data;
+      })
+      .catch(error => {
+        console.error('Login error:', error);
+        return { success: false, message: 'Network error' };
+      });
   }
 
   function register(name, email, password) {
-    var users = getUsers();
-    var exists = users.some(function (u) {
-      return u.email.toLowerCase() === email.toLowerCase();
-    });
-    if (exists) return { success: false, message: 'Email already registered' };
-
-    var newUser = {
-      id: 'user-' + Date.now().toString(36),
-      name: name,
-      email: email,
-      password: password,
-      role: 'customer',
-      createdAt: new Date().toISOString()
-    };
-    users.push(newUser);
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-    setSession(newUser);
-    return { success: true, user: newUser };
+    return fetch(`${API_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          token = data.token;
+          currentUser = data.user;
+          localStorage.setItem('cane_token', token);
+          console.log('✓ Registration successful');
+          return data;
+        }
+        return data;
+      })
+      .catch(error => {
+        console.error('Register error:', error);
+        return { success: false, message: 'Network error' };
+      });
   }
 
   function logout() {
-    clearSession();
+    token = null;
+    currentUser = null;
+    localStorage.removeItem('cane_token');
     window.location.href = 'login.html';
   }
 
   function isLoggedIn() {
-    return getSession() !== null;
+    return token !== null && currentUser !== null;
   }
 
   function isAdmin() {
-    var session = getSession();
-    return session && session.role === 'admin';
+    return currentUser && currentUser.role === 'admin';
+  }
+
+  function getSession() {
+    return currentUser;
+  }
+
+  function getMe() {
+    if (!token) return Promise.resolve(null);
+
+    return fetch(`${API_URL}/auth/me`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          currentUser = data.user;
+          console.log('✓ User loaded');
+          return data.user;
+        } else {
+          token = null;
+          localStorage.removeItem('cane_token');
+          return null;
+        }
+      })
+      .catch(error => {
+        console.error('Get user error:', error);
+        token = null;
+        localStorage.removeItem('cane_token');
+        return null;
+      });
   }
 
   function requireAuth(redirectTo) {
-    if (!isLoggedIn()) {
-      window.location.href = redirectTo || 'login.html';
-      return false;
-    }
-    return true;
+    return new Promise((resolve) => {
+      if (isLoggedIn()) {
+        resolve(true);
+      } else if (token) {
+        getMe().then(user => {
+          if (user) {
+            resolve(true);
+          } else {
+            window.location.href = redirectTo || 'login.html';
+            resolve(false);
+          }
+        });
+      } else {
+        window.location.href = redirectTo || 'login.html';
+        resolve(false);
+      }
+    });
   }
 
   function requireAdmin() {
-    if (!isAdmin()) {
-      window.location.href = 'login.html';
-      return false;
-    }
-    return true;
+    return new Promise((resolve) => {
+      if (isAdmin()) {
+        resolve(true);
+      } else if (isLoggedIn()) {
+        window.location.href = 'index.html';
+        resolve(false);
+      } else {
+        window.location.href = 'login.html';
+        resolve(false);
+      }
+    });
   }
 
   // Orders
   function getOrders() {
-    try {
-      return JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
-    } catch (e) {
-      return [];
-    }
+    if (!token) return Promise.resolve([]);
+
+    return fetch(`${API_URL}/orders`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => data.orders || [])
+      .catch(error => {
+        console.error('Get orders error:', error);
+        return [];
+      });
+  }
+
+  function getAllOrders() {
+    if (!token || !isAdmin()) return Promise.resolve([]);
+
+    return fetch(`${API_URL}/admin/orders`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => data.orders || [])
+      .catch(error => {
+        console.error('Get all orders error:', error);
+        return [];
+      });
   }
 
   function saveOrder(order) {
-    var orders = getOrders();
-    orders.unshift(order);
-    localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+    if (!token) return Promise.reject('Not logged in');
+
+    return fetch(`${API_URL}/orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ items: order.items, total: order.total })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          console.log('✓ Order saved');
+          return data.order;
+        }
+        throw new Error(data.message);
+      })
+      .catch(error => {
+        console.error('Save order error:', error);
+        throw error;
+      });
   }
 
   function updateOrderStatus(orderId, status) {
-    var orders = getOrders();
-    var order = orders.find(function (o) { return o.id === orderId; });
-    if (order) {
-      order.status = status;
-      localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
-    }
+    if (!token || !isAdmin()) return Promise.reject('Not authorized');
+
+    return fetch(`${API_URL}/admin/orders/${orderId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ status: status })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          console.log('✓ Order status updated');
+          return data;
+        }
+        throw new Error(data.message);
+      })
+      .catch(error => {
+        console.error('Update order error:', error);
+        throw error;
+      });
+  }
+
+  function initAuth() {
+    return loadToken();
   }
 
   // Expose API
   window.CaneAuth = {
-    init: initUsers,
+    init: initAuth,
     login: login,
     register: register,
     logout: logout,
@@ -155,12 +243,12 @@
     isAdmin: isAdmin,
     requireAuth: requireAuth,
     requireAdmin: requireAdmin,
-    getUsers: getUsers,
     getOrders: getOrders,
+    getAllOrders: getAllOrders,
     saveOrder: saveOrder,
     updateOrderStatus: updateOrderStatus
   };
 
   // Auto-init
-  initUsers();
+  initAuth();
 })();
