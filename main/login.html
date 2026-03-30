@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CANE's STORE — Login or create an account">
+  <title>Login — CANE's STORE</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style2.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
+  <style>
+    .auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;background:var(--bg-primary);position:relative;overflow:hidden}
+    .auth-page::before{content:'';position:absolute;top:-200px;right:-200px;width:500px;height:500px;border-radius:50%;background:rgba(214,140,94,.06);pointer-events:none}
+    .auth-page::after{content:'';position:absolute;bottom:-150px;left:-150px;width:400px;height:400px;border-radius:50%;background:rgba(214,140,94,.04);pointer-events:none}
+    .auth-card{background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:min(460px,100%);position:relative;z-index:1;overflow:hidden}
+    .auth-card__header{padding:40px 40px 0;text-align:center}
+    .auth-card__logo{display:inline-flex;align-items:center;gap:10px;text-decoration:none;margin-bottom:28px}
+    .auth-card__logo-icon{width:44px;height:44px;background:var(--accent-primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;font-weight:700;font-family:var(--font-heading)}
+    .auth-card__logo-text{font-family:var(--font-heading);font-size:1.4rem;font-weight:700;color:var(--text-heading)}
+    .auth-card__title{font-family:var(--font-heading);font-size:1.8rem;font-weight:700;color:var(--text-heading);margin-bottom:6px}
+    .auth-card__subtitle{font-size:.92rem;color:var(--text-light);margin-bottom:28px}
+    .auth-tabs{display:flex;border-bottom:2px solid var(--bg-secondary);margin:0 40px}
+    .auth-tab{flex:1;padding:14px 0;text-align:center;font-size:.92rem;font-weight:600;color:var(--text-light);cursor:pointer;position:relative;transition:color .2s ease;background:none;border:none}
+    .auth-tab.active{color:var(--accent-primary)}
+    .auth-tab::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:var(--accent-primary);transform:scaleX(0);transition:transform .3s ease}
+    .auth-tab.active::after{transform:scaleX(1)}
+    .auth-form{padding:32px 40px 40px;display:none}
+    .auth-form.active{display:block}
+    .auth-form .form-group{margin-bottom:20px}
+    .auth-form .form-group label{display:block;font-size:.85rem;font-weight:600;color:var(--text-heading);margin-bottom:8px}
+    .auth-form .form-group input{width:100%;padding:14px 18px;border:1.5px solid var(--accent-secondary);border-radius:var(--radius-sm);font-size:.92rem;color:var(--text-heading);background:var(--bg-primary);transition:border-color .2s ease}
+    .auth-form .form-group input:focus{border-color:var(--accent-primary);outline:none}
+    .auth-form__error{background:rgba(199,92,92,.08);border:1px solid rgba(199,92,92,.2);color:#C75C5C;padding:10px 16px;border-radius:var(--radius-sm);font-size:.85rem;margin-bottom:16px;display:none}
+    .auth-form__error.visible{display:block}
+    .auth-form__submit{width:100%;padding:16px;border-radius:var(--radius-pill);font-size:1rem;font-weight:600;background:var(--accent-primary);color:#fff;border:none;cursor:pointer;transition:all .3s ease;margin-top:8px}
+    .auth-form__submit:hover{background:var(--accent-primary-hover);transform:translateY(-2px);box-shadow:0 6px 20px rgba(214,140,94,.35)}
+    .auth-form__divider{text-align:center;margin:20px 0;position:relative}
+    .auth-form__divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--accent-secondary)}
+    .auth-form__divider span{background:var(--bg-card);padding:0 16px;position:relative;font-size:.82rem;color:var(--text-light)}
+    .auth-form__forgot{text-align:right;margin-top:-10px;margin-bottom:16px}
+    .auth-form__forgot a{font-size:.82rem;color:var(--accent-primary);font-weight:500}
+    .auth-form__forgot a:hover{text-decoration:underline}
+    .auth-form__footer{text-align:center;margin-top:20px;font-size:.88rem;color:var(--text-light)}
+    .auth-form__footer a{color:var(--accent-primary);font-weight:600;cursor:pointer}
+    .auth-form__footer a:hover{text-decoration:underline}
+    .auth-card__badge{position:absolute;top:20px;right:20px;background:rgba(214,140,94,.1);color:var(--accent-primary);padding:6px 14px;border-radius:var(--radius-pill);font-size:.72rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+    .password-toggle{position:relative}
+    .password-toggle input{padding-right:48px}
+    .password-toggle button{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:1.1rem;color:var(--text-light);cursor:pointer;padding:4px}
+    .auth-back{position:absolute;top:24px;left:24px;display:flex;align-items:center;gap:6px;font-size:.88rem;color:var(--text-body);font-weight:500;z-index:2;text-decoration:none;transition:color .2s}
+    .auth-back:hover{color:var(--accent-primary)}
+  </style>
+</head>
+<body>
+  <div class="auth-page">
+    <a href="index.html" class="auth-back">← Back to store</a>
+    <div class="auth-card">
+      <div class="auth-card__badge">Secure Login</div>
+      <div class="auth-card__header">
+        <a href="index.html" class="auth-card__logo">
+          <div class="auth-card__logo-icon">C</div>
+          <span class="auth-card__logo-text">CANE's STORE</span>
+        </a>
+        <h1 class="auth-card__title" id="auth-title">Welcome Back</h1>
+        <p class="auth-card__subtitle" id="auth-subtitle">Sign in to your account to continue shopping</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login" id="tab-login">Sign In</button>
+        <button class="auth-tab" data-tab="register" id="tab-register">Create Account</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form class="auth-form active" id="form-login" autocomplete="on">
+        <div class="auth-form__error" id="login-error"></div>
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <input type="email" id="login-email" placeholder="you@example.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <div class="password-toggle">
+            <input type="password" id="login-password" placeholder="Enter your password" required autocomplete="current-password">
+            <button type="button" onclick="togglePassword('login-password', this)">👁</button>
+          </div>
+        </div>
+        <div class="auth-form__forgot"><a href="#">Forgot password?</a></div>
+        <button type="submit" class="auth-form__submit" id="login-btn">Sign In</button>
+        <div class="auth-form__footer">
+          Don't have an account? <a onclick="switchTab('register')">Create one</a>
+        </div>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form class="auth-form" id="form-register" autocomplete="on">
+        <div class="auth-form__error" id="register-error"></div>
+        <div class="form-group">
+          <label for="register-name">Full Name</label>
+          <input type="text" id="register-name" placeholder="John Kamau" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="register-email">Email Address</label>
+          <input type="email" id="register-email" placeholder="you@example.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="register-password">Password</label>
+          <div class="password-toggle">
+            <input type="password" id="register-password" placeholder="Min 6 characters" required autocomplete="new-password" minlength="6">
+            <button type="button" onclick="togglePassword('register-password', this)">👁</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="register-confirm">Confirm Password</label>
+          <div class="password-toggle">
+            <input type="password" id="register-confirm" placeholder="Re-enter password" required autocomplete="new-password">
+            <button type="button" onclick="togglePassword('register-confirm', this)">👁</button>
+          </div>
+        </div>
+        <button type="submit" class="auth-form__submit" id="register-btn">Create Account</button>
+        <div class="auth-form__footer">
+          Already have an account? <a onclick="switchTab('login')">Sign in</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+  <script>
+    // Redirect if already logged in
+    if (CaneAuth.isLoggedIn()) {
+      var s = CaneAuth.getSession();
+      window.location.href = s.role === 'admin' ? 'admin.html' : 'index.html';
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach(function (t) { t.classList.remove('active'); });
+      document.querySelectorAll('.auth-form').forEach(function (f) { f.classList.remove('active'); });
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.getElementById('form-' + tab).classList.add('active');
+      if (tab === 'login') {
+        document.getElementById('auth-title').textContent = 'Welcome Back';
+        document.getElementById('auth-subtitle').textContent = 'Sign in to your account to continue shopping';
+      } else {
+        document.getElementById('auth-title').textContent = 'Create Account';
+        document.getElementById('auth-subtitle').textContent = 'Join CANE\'s STORE for fresh groceries';
+      }
+    }
+
+    // Tab click handlers
+    document.querySelectorAll('.auth-tab').forEach(function (tab) {
+      tab.addEventListener('click', function () { switchTab(tab.dataset.tab); });
+    });
+
+    function showError(id, msg) {
+      var el = document.getElementById(id);
+      el.textContent = msg;
+      el.classList.add('visible');
+      setTimeout(function () { el.classList.remove('visible'); }, 5000);
+    }
+
+    function togglePassword(inputId, btn) {
+      var inp = document.getElementById(inputId);
+      if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+      else { inp.type = 'password'; btn.textContent = '👁'; }
+    }
+
+    // Login
+    document.getElementById('form-login').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = document.getElementById('login-email').value.trim();
+      var password = document.getElementById('login-password').value;
+      if (!email || !password) { showError('login-error', 'Please fill in all fields'); return; }
+      var result = CaneAuth.login(email, password);
+      if (!result.success) { showError('login-error', result.message); return; }
+      window.location.href = result.user.role === 'admin' ? 'admin.html' : 'index.html';
+    });
+
+    // Register
+    document.getElementById('form-register').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = document.getElementById('register-name').value.trim();
+      var email = document.getElementById('register-email').value.trim();
+      var password = document.getElementById('register-password').value;
+      var confirm = document.getElementById('register-confirm').value;
+      if (!name || !email || !password || !confirm) { showError('register-error', 'Please fill in all fields'); return; }
+      if (password.length < 6) { showError('register-error', 'Password must be at least 6 characters'); return; }
+      if (password !== confirm) { showError('register-error', 'Passwords do not match'); return; }
+      var result = CaneAuth.register(name, email, password);
+      if (!result.success) { showError('register-error', result.message); return; }
+      window.location.href = 'index.html';
+    });
+  </script>
+</body>
+</html>

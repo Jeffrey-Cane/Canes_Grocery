@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CANE's STORE — Fresh groceries delivered to your door in Nairobi. Fruits, vegetables, dairy, bakery, snacks & drinks.">
+  <title>CANE's STORE — Fresh Groceries Delivered</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style2.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <a href="#" class="navbar__logo">
+      <div class="navbar__logo-icon">C</div>
+      CANE's STORE
+    </a>
+    <ul class="navbar__links">
+      <li><a href="#" class="active">Home</a></li>
+      <li><a href="#products-section">Shop</a></li>
+      <li><a href="#features">About</a></li>
+      <li><a href="#footer">Contact</a></li>
+    </ul>
+    <div class="navbar__actions">
+      <button class="navbar__search-toggle" id="search-toggle" aria-label="Search">🔍</button>
+      <button class="navbar__cart-btn" id="cart-btn" aria-label="Cart">
+        🛒
+        <span class="navbar__cart-badge" id="cart-badge">0</span>
+      </button>
+      <a href="login.html" class="navbar__cart-btn" id="user-btn" aria-label="Account" title="Account">👤</a>
+      <button class="navbar__mobile-toggle" id="mobile-toggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- SEARCH BAR -->
+  <div class="search-overlay" id="search-overlay"></div>
+  <div class="search-bar" id="search-bar">
+    <input type="text" class="search-bar__input" id="search-input" placeholder="Search for fresh groceries...">
+    <button class="search-bar__close" id="search-close">✕</button>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero__content">
+      <div class="hero__tag">
+        <span class="hero__tag-dot"></span>
+        Now delivering across Nairobi
+      </div>
+      <h1 class="hero__title">
+        Fresh Groceries<br>Delivered To<br>Your <span>Door</span>
+      </h1>
+      <p class="hero__description">
+        Handpicked fresh produce, dairy, bakery and more — straight from trusted farms to your kitchen. Quality you can taste.
+      </p>
+      <div class="hero__buttons">
+        <a href="#products-section" class="btn btn--primary">Shop Now →</a>
+        <a href="#features" class="btn btn--secondary">How It Works</a>
+      </div>
+      <div class="hero__stats">
+        <div>
+          <div class="hero__stat-number">500+</div>
+          <div class="hero__stat-label">Products</div>
+        </div>
+        <div>
+          <div class="hero__stat-number">2K+</div>
+          <div class="hero__stat-label">Happy Customers</div>
+        </div>
+        <div>
+          <div class="hero__stat-number">24h</div>
+          <div class="hero__stat-label">Fast Delivery</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero__image">
+      <div class="hero__image-decoration"></div>
+      <div class="hero__image-circle">
+        <img src="images/hero.png" alt="Fresh groceries basket">
+      </div>
+      <div class="hero__float-card">
+        <div class="hero__float-icon" style="background:rgba(107,155,107,.12)">🚚</div>
+        <div class="hero__float-text">
+          <strong>Free Delivery</strong>
+          <span>Orders over KSh 2,000</span>
+        </div>
+      </div>
+      <div class="hero__float-card">
+        <div class="hero__float-icon" style="background:rgba(214,140,94,.12)">⭐</div>
+        <div class="hero__float-text">
+          <strong>Top Rated</strong>
+          <span>4.9 / 5 stars</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES STRIP -->
+  <section class="features-strip" id="features">
+    <div class="feature-item">
+      <div class="feature-item__icon">🌿</div>
+      <div class="feature-item__text">
+        <strong>Farm Fresh</strong>
+        <span>Sourced from local Kenyan farms</span>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-item__icon">🚚</div>
+      <div class="feature-item__text">
+        <strong>Same Day Delivery</strong>
+        <span>Order by 2PM, get it today</span>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-item__icon">💰</div>
+      <div class="feature-item__text">
+        <strong>Best Prices</strong>
+        <span>Competitive market prices</span>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-item__icon">💳</div>
+      <div class="feature-item__text">
+        <strong>Secure Payments</strong>
+        <span>Pay safely via Paystack</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCTS SECTION -->
+  <section class="section" id="products-section">
+    <div class="section__header">
+      <div class="section__subtitle">Our Products</div>
+      <h2 class="section__title">Fresh & Handpicked For You</h2>
+      <p class="section__description">Browse our curated selection of quality groceries, delivered fresh to your doorstep.</p>
+    </div>
+
+    <div class="categories" id="categories">
+      <button class="category-btn active" data-category="All">All</button>
+      <button class="category-btn" data-category="Fruits">🍎 Fruits</button>
+      <button class="category-btn" data-category="Vegetables">🥬 Vegetables</button>
+      <button class="category-btn" data-category="Dairy">🥛 Dairy</button>
+      <button class="category-btn" data-category="Bakery">🍞 Bakery</button>
+      <button class="category-btn" data-category="Snacks">🍿 Snacks</button>
+      <button class="category-btn" data-category="Drinks">🥤 Drinks</button>
+    </div>
+
+    <div class="products-grid" id="products-grid">
+      <!-- Rendered by JS -->
+    </div>
+  </section>
+
+  <!-- CART DRAWER -->
+  <div class="cart-overlay" id="cart-overlay"></div>
+  <aside class="cart-drawer" id="cart-drawer">
+    <div class="cart-drawer__header">
+      <div>
+        <h2 class="cart-drawer__title">Your Cart</h2>
+        <span class="cart-drawer__count" id="cart-count">0 items</span>
+      </div>
+      <button class="cart-drawer__close" id="cart-close">✕</button>
+    </div>
+    <div class="cart-drawer__items" id="cart-items">
+      <!-- Rendered by JS -->
+    </div>
+    <div class="cart-drawer__footer" id="cart-footer" style="display:none">
+      <div class="cart-drawer__subtotal">
+        <span class="cart-drawer__subtotal-label">Subtotal</span>
+        <span class="cart-drawer__subtotal-value" id="cart-subtotal">KSh 0</span>
+      </div>
+      <div class="cart-drawer__delivery-note">Delivery fee calculated at checkout. Free over KSh 2,000!</div>
+      <button class="btn btn--primary cart-drawer__checkout-btn" id="checkout-btn">Proceed to Checkout →</button>
+    </div>
+  </aside>
+
+  <!-- CHECKOUT MODAL -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-title">Checkout</h2>
+        <button class="modal__close" id="modal-close">✕</button>
+      </div>
+      <div id="checkout-form">
+        <div class="modal__body">
+          <div class="form-group">
+            <label for="checkout-name">Full Name *</label>
+            <input type="text" id="checkout-name" placeholder="John Kamau">
+          </div>
+          <div class="form-group">
+            <label for="checkout-email">Email Address *</label>
+            <input type="email" id="checkout-email" placeholder="john@example.com">
+          </div>
+          <div class="form-group">
+            <label for="checkout-phone">Phone Number *</label>
+            <input type="tel" id="checkout-phone" placeholder="0712 345 678">
+          </div>
+          <div class="form-group">
+            <label for="checkout-address">Delivery Address *</label>
+            <textarea id="checkout-address" placeholder="e.g. Westlands, Nairobi — apartment name & number"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Payment Method</label>
+            <div class="payment-options">
+              <div class="payment-option selected" data-method="paystack">
+                <div class="payment-option__icon">💳</div>
+                <div class="payment-option__name">Pay with Paystack</div>
+              </div>
+              <div class="payment-option" data-method="cod">
+                <div class="payment-option__icon">💵</div>
+                <div class="payment-option__name">Cash on Delivery</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <div class="modal__order-summary" id="order-summary"></div>
+          <button class="btn btn--primary" style="width:100%;padding:16px;font-size:1rem" id="place-order-btn">Pay & Place Order</button>
+        </div>
+      </div>
+      <div id="confirmation-view" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer" id="footer">
+    <div class="footer__grid">
+      <div>
+        <div class="footer__brand">CANE's STORE</div>
+        <p class="footer__description">Your trusted online grocery store in Nairobi. Fresh produce, quality products, and fast delivery — every single day.</p>
+      </div>
+      <div>
+        <h3 class="footer__heading">Shop</h3>
+        <ul class="footer__links">
+          <li><a href="#">Fruits</a></li>
+          <li><a href="#">Vegetables</a></li>
+          <li><a href="#">Dairy</a></li>
+          <li><a href="#">Bakery</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer__heading">Company</h3>
+        <ul class="footer__links">
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer__heading">Support</h3>
+        <ul class="footer__links">
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">Returns</a></li>
+          <li><a href="#">Delivery Info</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 CANE's STORE. All rights reserved.</span>
+      <span>Made with ♥ in Nairobi</span>
+    </div>
+  </footer>
+
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <script src="auth.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

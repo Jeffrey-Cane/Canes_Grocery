@@ -1,0 +1,11 @@
+# Environments
+.env
+.env.local
+
+# Node
+node_modules/
+npm-debug.log
+
+# System
+.DS_Store
+Thumbs.db

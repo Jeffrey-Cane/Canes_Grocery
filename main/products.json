@@ -1,0 +1,22 @@
+[
+  {"id":1,"name":"Organic Apples","category":"Fruits","price":350,"unit":"per kg","image":"images/apples.webp","badge":"Organic"},
+  {"id":2,"name":"Fresh Mangoes","category":"Fruits","price":180,"unit":"per piece","image":"images/mangoes.webp","badge":"In Season"},
+  {"id":3,"name":"Sweet Bananas","category":"Fruits","price":120,"unit":"per bunch","image":"images/bananas.webp","badge":""},
+  {"id":4,"name":"Ripe Avocados","category":"Fruits","price":50,"unit":"per piece","image":"images/avocados.webp","badge":"Popular"},
+  {"id":5,"name":"Fresh Spinach","category":"Vegetables","price":60,"unit":"per bunch","image":"images/spinach.webp","badge":"Farm Fresh"},
+  {"id":6,"name":"Red Tomatoes","category":"Vegetables","price":100,"unit":"per kg","image":"","badge":"","emoji":"🍅"},
+  {"id":7,"name":"Fresh Carrots","category":"Vegetables","price":80,"unit":"per kg","image":"","badge":"","emoji":"🥕"},
+  {"id":8,"name":"Green Capsicum","category":"Vegetables","price":45,"unit":"per piece","image":"","badge":"","emoji":"🫑"},
+  {"id":9,"name":"Fresh Milk","category":"Dairy","price":65,"unit":"500ml","image":"","badge":"Daily Fresh","emoji":"🥛"},
+  {"id":10,"name":"Farm Eggs","category":"Dairy","price":420,"unit":"tray of 30","image":"","badge":"Free Range","emoji":"🥚"},
+  {"id":11,"name":"Natural Yoghurt","category":"Dairy","price":150,"unit":"500ml","image":"","badge":"","emoji":"🥣"},
+  {"id":12,"name":"Cheddar Cheese","category":"Dairy","price":480,"unit":"250g","image":"","badge":"Premium","emoji":"🧀"},
+  {"id":13,"name":"White Bread","category":"Bakery","price":65,"unit":"loaf","image":"","badge":"","emoji":"🍞"},
+  {"id":14,"name":"Butter Croissants","category":"Bakery","price":90,"unit":"2 pack","image":"","badge":"Fresh Baked","emoji":"🥐"},
+  {"id":15,"name":"Chocolate Muffins","category":"Bakery","price":200,"unit":"4 pack","image":"","badge":"","emoji":"🧁"},
+  {"id":16,"name":"Salted Crisps","category":"Snacks","price":50,"unit":"150g","image":"","badge":"","emoji":"🥔"},
+  {"id":17,"name":"Mixed Nuts","category":"Snacks","price":350,"unit":"250g","image":"","badge":"Healthy","emoji":"🥜"},
+  {"id":18,"name":"Dark Chocolate","category":"Snacks","price":280,"unit":"100g bar","image":"","badge":"Premium","emoji":"🍫"},
+  {"id":19,"name":"Fresh Orange Juice","category":"Drinks","price":180,"unit":"1 litre","image":"","badge":"100% Natural","emoji":"🍊"},
+  {"id":20,"name":"Mineral Water","category":"Drinks","price":35,"unit":"1 litre","image":"","badge":"","emoji":"💧"}
+]
