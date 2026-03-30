@@ -1,11 +1,34 @@
 # Environments
 .env
 .env.local
+.env.*.local
 
 # Node
 node_modules/
 npm-debug.log
+package-lock.json
+yarn.lock
 
 # System
 .DS_Store
 Thumbs.db
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Build files
+dist/
+build/
+.cache/
+
+# Firebase
+firebase-debug.log
+.firebaserc
