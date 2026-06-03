@@ -12,6 +12,13 @@
   const $ = (s, p) => (p || document).querySelector(s);
   const $$ = (s, p) => [...(p || document).querySelectorAll(s)];
 
+  function getApiBase() {
+    if (window.__CANE_API_URL) return window.__CANE_API_URL;
+    var meta = document.querySelector('meta[name="api-base"]');
+    if (meta && meta.content) return meta.content;
+    return 'http://localhost:3000/api';
+  }
+
   document.addEventListener('DOMContentLoaded', async () => {
     await loadProducts();
     renderProducts();
@@ -91,13 +98,23 @@
       grid.innerHTML = '<div class="no-results"><div class="no-results__icon">⏳</div><div class="no-results__text">Loading products...</div><div class="no-results__sub">Please wait</div></div>';
     }
     try {
-      const res = await fetch('products.json');
-      products = await res.json();
+      const apiBase = getApiBase();
+      const res = await fetch(apiBase + '/products');
+      const data = await res.json();
+      products = Array.isArray(data) ? data : (data.products || []);
+      if (products.length === 0) {
+        throw new Error('No products from API');
+      }
     } catch (e) {
-      console.error('Failed to load products:', e);
-      products = [];
-      if (grid) {
-        grid.innerHTML = '<div class="no-results"><div class="no-results__icon">⚠️</div><div class="no-results__text">Failed to load products</div><div class="no-results__sub">Please refresh the page</div></div>';
+      try {
+        const fallbackRes = await fetch('products.json');
+        products = await fallbackRes.json();
+      } catch (fallbackError) {
+        console.error('Failed to load products:', e, fallbackError);
+        products = [];
+        if (grid) {
+          grid.innerHTML = '<div class="no-results"><div class="no-results__icon">⚠️</div><div class="no-results__text">Failed to load products</div><div class="no-results__sub">Please refresh the page</div></div>';
+        }
       }
     }
   }
@@ -346,6 +363,21 @@
 
     function openModal() {
       if (cart.length === 0) return;
+      if (typeof CaneAuth !== 'undefined' && CaneAuth.requireAuth) {
+        CaneAuth.requireAuth('login.html').then(function (isAuthed) {
+          if (!isAuthed) {
+            showToast('Please sign in to place an order', '🔒');
+            return;
+          }
+          $('#cart-overlay').classList.remove('active');
+          $('#cart-drawer').classList.remove('active');
+          modalOverlay.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          renderOrderSummary();
+          showCheckoutForm();
+        });
+        return;
+      }
       $('#cart-overlay').classList.remove('active');
       $('#cart-drawer').classList.remove('active');
       modalOverlay.classList.add('active');

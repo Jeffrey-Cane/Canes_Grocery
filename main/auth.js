@@ -185,6 +185,85 @@
       });
   }
 
+  function getAllUsers() {
+    if (!token || !isAdmin()) return Promise.resolve([]);
+
+    return fetch(`${API_URL}/admin/users`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => data.users || [])
+      .catch(error => {
+        console.error('Get all users error:', error);
+        return [];
+      });
+  }
+
+  function getProducts() {
+    return fetch(`${API_URL}/products`, {
+      method: 'GET'
+    })
+      .then(res => res.json())
+      .then(data => data.products || data || [])
+      .catch(error => {
+        console.error('Get products error:', error);
+        return [];
+      });
+  }
+
+  function createProduct(product) {
+    if (!token || !isAdmin()) return Promise.reject('Not authorized');
+
+    return fetch(`${API_URL}/admin/products`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(product)
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) return data.product;
+        throw new Error(data.message || 'Create product failed');
+      });
+  }
+
+  function updateProduct(productId, product) {
+    if (!token || !isAdmin()) return Promise.reject('Not authorized');
+
+    return fetch(`${API_URL}/admin/products/${productId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(product)
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) return data.product;
+        throw new Error(data.message || 'Update product failed');
+      });
+  }
+
+  function deleteProduct(productId) {
+    if (!token || !isAdmin()) return Promise.reject('Not authorized');
+
+    return fetch(`${API_URL}/admin/products/${productId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) return true;
+        throw new Error(data.message || 'Delete product failed');
+      });
+  }
+
   function saveOrder(order) {
     if (!token) return Promise.reject('Not logged in');
 
@@ -252,6 +331,11 @@
     requireAdmin: requireAdmin,
     getOrders: getOrders,
     getAllOrders: getAllOrders,
+    getAllUsers: getAllUsers,
+    getProducts: getProducts,
+    createProduct: createProduct,
+    updateProduct: updateProduct,
+    deleteProduct: deleteProduct,
     saveOrder: saveOrder,
     updateOrderStatus: updateOrderStatus
   };

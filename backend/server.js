@@ -2,7 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 
@@ -12,6 +14,8 @@ app.use(express.json());
 
 // Firebase services
 let db, auth;
+let productsSeeded = false;
+const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
 
 // Initialize Firebase Admin SDK
 const serviceAccount = {
@@ -63,7 +67,76 @@ const verifyToken = async (req, res, next) => {
   }
 };
 
+const requireAdmin = async (req, res, next) => {
+  try {
+    const userDoc = await db.collection('users').doc(req.userId).get();
+    if (!userDoc.data() || userDoc.data().role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+    next();
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+function readSeedProducts() {
+  try {
+    const seedPath = path.join(__dirname, '..', 'main', 'products.json');
+    const raw = fs.readFileSync(seedPath, 'utf-8');
+    const data = JSON.parse(raw);
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+async function ensureProductsSeeded() {
+  if (productsSeeded) return;
+  const snapshot = await db.collection('products').limit(1).get();
+  if (!snapshot.empty) {
+    productsSeeded = true;
+    return;
+  }
+  const seed = readSeedProducts();
+  if (seed.length === 0) {
+    productsSeeded = true;
+    return;
+  }
+
+  const batch = db.batch();
+  seed.forEach((p) => {
+    const id = parseInt(p.id, 10);
+    const docId = Number.isFinite(id) ? String(id) : db.collection('products').doc().id;
+    const ref = db.collection('products').doc(docId);
+    batch.set(ref, { ...p, id: Number.isFinite(id) ? id : null });
+  });
+  await batch.commit();
+  productsSeeded = true;
+}
+
 // ============ AUTH ROUTES ============
+
+async function verifyEmailPassword(email, password) {
+  if (!FIREBASE_API_KEY) {
+    throw new Error('FIREBASE_API_KEY is missing');
+  }
+
+  const res = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: password, returnSecureToken: true })
+    }
+  );
+
+  const data = await res.json();
+  if (!res.ok) {
+    const msg = data && data.error && data.error.message ? data.error.message : 'Invalid credentials';
+    throw new Error(msg);
+  }
+  return data;
+}
 
 // Register
 app.post('/api/auth/register', async (req, res) => {
@@ -113,7 +186,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     // Generate JWT token
-    const token = jwt.sign({ uid: userRecord.uid }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ uid: uid }, process.env.JWT_SECRET, {
       expiresIn: '7d'
     });
 
@@ -150,25 +223,33 @@ app.post('/api/auth/login', async (req, res) => {
   }
 
   try {
-    console.log('🔍 Looking up user by email in Firebase Auth...');
-    // Find user by email in Firebase Auth
-    const userRecord = await auth.getUserByEmail(email);
-    console.log('✅ Firebase Auth user found:', userRecord.uid);
+    const signIn = await verifyEmailPassword(email, password);
+    const uid = signIn.localId;
 
     console.log('📖 Fetching user profile from Firestore...');
-    // Get user profile from Firestore
-    const userDoc = await db.collection('users').doc(userRecord.uid).get();
+    const userDoc = await db.collection('users').doc(uid).get();
 
+    let userData = null;
     if (!userDoc.exists) {
-      console.error('❌ User profile not found in Firestore for UID:', userRecord.uid);
-      return res.status(400).json({ success: false, message: 'User profile not found' });
+      const fallbackName = signIn.displayName || (email ? email.split('@')[0] : 'User');
+      userData = {
+        id: uid,
+        name: fallbackName,
+        email: email,
+        role: 'customer',
+        createdAt: new Date().toISOString(),
+        phone: '',
+        address: ''
+      };
+      await db.collection('users').doc(uid).set(userData);
+    } else {
+      userData = userDoc.data();
     }
 
-    const userData = userDoc.data();
-    console.log('✅ User profile found:', userData.name);
+    console.log('✅ User profile loaded:', userData.name);
 
     // Generate JWT token
-    const token = jwt.sign({ uid: userRecord.uid }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ uid: uid }, process.env.JWT_SECRET, {
       expiresIn: '7d'
     });
 
@@ -182,9 +263,9 @@ app.post('/api/auth/login', async (req, res) => {
   } catch (error) {
     console.error('❌ Login error:', error.code, error.message);
     let message = 'Login failed';
-    if (error.code === 'auth/user-not-found') {
-      message = 'Email not found';
-    }
+    if (error.message === 'EMAIL_NOT_FOUND') message = 'Email not found';
+    if (error.message === 'INVALID_PASSWORD') message = 'Incorrect password';
+    if (error.message === 'FIREBASE_API_KEY is missing') message = 'Server is missing Firebase API key';
     res.status(400).json({ success: false, message: message, error: error.message });
   }
 });
@@ -260,17 +341,28 @@ app.post('/api/orders', verifyToken, async (req, res) => {
   }
 });
 
+// ============ PRODUCT ROUTES ============
+
+// Public products list
+app.get('/api/products', async (req, res) => {
+  try {
+    await ensureProductsSeeded();
+    const snapshot = await db.collection('products').orderBy('id').get();
+    const products = [];
+    snapshot.forEach((doc) => {
+      products.push({ id: doc.id, ...doc.data() });
+    });
+    res.json({ success: true, products: products });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message, products: [] });
+  }
+});
+
 // ============ ADMIN ROUTES ============
 
 // Get all orders (admin only, requires token)
-app.get('/api/admin/orders', verifyToken, async (req, res) => {
+app.get('/api/admin/orders', verifyToken, requireAdmin, async (req, res) => {
   try {
-    // Check if user is admin
-    const userDoc = await db.collection('users').doc(req.userId).get();
-    if (!userDoc.data() || userDoc.data().role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Not authorized' });
-    }
-
     const snapshot = await db
       .collection('orders')
       .orderBy('createdAt', 'desc')
@@ -287,8 +379,27 @@ app.get('/api/admin/orders', verifyToken, async (req, res) => {
   }
 });
 
+// Get all users (admin only, requires token)
+app.get('/api/admin/users', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const snapshot = await db
+      .collection('users')
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    const users = [];
+    snapshot.forEach((doc) => {
+      users.push({ id: doc.id, ...doc.data() });
+    });
+
+    res.json({ success: true, users: users });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
 // Update order status (admin only, requires token)
-app.patch('/api/admin/orders/:orderId', verifyToken, async (req, res) => {
+app.patch('/api/admin/orders/:orderId', verifyToken, requireAdmin, async (req, res) => {
   const { status } = req.body;
 
   if (!status) {
@@ -296,18 +407,93 @@ app.patch('/api/admin/orders/:orderId', verifyToken, async (req, res) => {
   }
 
   try {
-    // Check if user is admin
-    const userDoc = await db.collection('users').doc(req.userId).get();
-    if (!userDoc.data() || userDoc.data().role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Not authorized' });
-    }
-
     await db.collection('orders').doc(req.params.orderId).update({
       status: status,
       updatedAt: new Date().toISOString()
     });
 
     res.json({ success: true, message: 'Order updated' });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+// Create product (admin only)
+app.post('/api/admin/products', verifyToken, requireAdmin, async (req, res) => {
+  const { name, category, price, unit, badge, emoji, image } = req.body;
+
+  if (!name || !category || !price) {
+    return res.status(400).json({ success: false, message: 'Missing fields' });
+  }
+
+  try {
+    const latest = await db.collection('products').orderBy('id', 'desc').limit(1).get();
+    let nextId = 1;
+    if (!latest.empty) {
+      const last = latest.docs[0].data();
+      nextId = (parseInt(last.id, 10) || 0) + 1;
+    }
+
+    const product = {
+      id: nextId,
+      name: name,
+      category: category,
+      price: parseInt(price, 10),
+      unit: unit || '',
+      badge: badge || '',
+      emoji: emoji || '',
+      image: image || ''
+    };
+
+    await db.collection('products').doc(String(nextId)).set(product);
+
+    res.status(201).json({ success: true, product: product });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+// Update product (admin only)
+app.patch('/api/admin/products/:productId', verifyToken, requireAdmin, async (req, res) => {
+  const { name, category, price, unit, badge, emoji, image } = req.body;
+  const productId = req.params.productId;
+
+  try {
+    const ref = db.collection('products').doc(String(productId));
+    const snap = await ref.get();
+    if (!snap.exists) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    const updates = {};
+    if (name !== undefined) updates.name = name;
+    if (category !== undefined) updates.category = category;
+    if (price !== undefined) updates.price = parseInt(price, 10);
+    if (unit !== undefined) updates.unit = unit;
+    if (badge !== undefined) updates.badge = badge;
+    if (emoji !== undefined) updates.emoji = emoji;
+    if (image !== undefined) updates.image = image;
+
+    await ref.update(updates);
+    const updated = await ref.get();
+
+    res.json({ success: true, product: { id: updated.id, ...updated.data() } });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+// Delete product (admin only)
+app.delete('/api/admin/products/:productId', verifyToken, requireAdmin, async (req, res) => {
+  const productId = req.params.productId;
+  try {
+    const ref = db.collection('products').doc(String(productId));
+    const snap = await ref.get();
+    if (!snap.exists) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+    await ref.delete();
+    res.json({ success: true });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }

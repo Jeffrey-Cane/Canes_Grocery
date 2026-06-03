@@ -320,26 +320,11 @@
     // Logout
     document.getElementById('logout-btn').addEventListener('click', function () { CaneAuth.logout(); });
 
-    // Products from localStorage
-    var PRODUCTS_KEY = 'cane_products_admin';
-    function getProducts() {
-      var saved = localStorage.getItem(PRODUCTS_KEY);
-      if (saved) return JSON.parse(saved);
-      return null; // Will fetch from JSON
-    }
-    function saveProducts(prods) {
-      localStorage.setItem(PRODUCTS_KEY, JSON.stringify(prods));
-    }
-
     var allProducts = [];
 
     async function loadProducts() {
-      var saved = getProducts();
-      if (saved) { allProducts = saved; return; }
       try {
-        var res = await fetch('products.json');
-        allProducts = await res.json();
-        saveProducts(allProducts);
+        allProducts = await CaneAuth.getProducts();
       } catch (e) { allProducts = []; }
     }
 
@@ -355,25 +340,18 @@
       if (prodBody && allProducts.length === 0) prodBody.innerHTML = '<tr><td colspan="6" class="admin-table__empty">Loading products...</td></tr>';
 
       var orders = [];
+      var users = [];
       try {
         orders = await CaneAuth.getAllOrders();
       } catch (e) {
         orders = [];
       }
 
-      var users = {};
-      orders.forEach(function (o) {
-        var email = o.userEmail || o.email || '';
-        if (!email) return;
-        if (!users[email]) {
-          users[email] = {
-            name: o.userName || o.name || 'Customer',
-            email: email,
-            role: 'customer',
-            createdAt: o.createdAt || o.date || new Date().toISOString()
-          };
-        }
-      });
+      try {
+        users = await CaneAuth.getAllUsers();
+      } catch (e) {
+        users = [];
+      }
       // Stats
       var revenue = orders.reduce(function (s, o) { return s + (o.total || 0); }, 0);
       document.getElementById('stat-revenue').textContent = 'KSh ' + revenue.toLocaleString();
@@ -407,11 +385,10 @@
       }).join('');
 
       // Customers
-      var userList = Object.keys(users).map(function (k) { return users[k]; });
-      if (userList.length === 0) {
+      if (users.length === 0) {
         custBody.innerHTML = '<tr><td colspan="4" class="admin-table__empty">No customers yet</td></tr>';
       } else {
-        custBody.innerHTML = userList.map(function (u) {
+        custBody.innerHTML = users.map(function (u) {
         return '<tr><td><strong>' + u.name + '</strong></td><td>' + u.email + '</td><td><span class="status-badge ' + (u.role === 'admin' ? 'processing' : 'delivered') + '">' + u.role + '</span></td><td>' + new Date(u.createdAt).toLocaleDateString() + '</td></tr>';
         }).join('');
       }
@@ -450,9 +427,10 @@
 
     window.deleteProduct = function (id) {
       if (!confirm('Delete this product?')) return;
-      allProducts = allProducts.filter(function (p) { return p.id !== id; });
-      saveProducts(allProducts);
-      refreshData();
+      CaneAuth.deleteProduct(id)
+        .then(function () { return loadProducts(); })
+        .then(function () { refreshData(); })
+        .catch(function () { alert('Delete failed. Please try again.'); });
     };
 
     document.getElementById('product-form').addEventListener('submit', function (e) {
@@ -469,23 +447,22 @@
       };
 
       if (editId) {
-        // Update
-        var idx = allProducts.findIndex(function (p) { return p.id === parseInt(editId); });
-        if (idx !== -1) {
-          prodData.id = parseInt(editId);
-          prodData.image = allProducts[idx].image;
-          allProducts[idx] = prodData;
-        }
+        CaneAuth.updateProduct(editId, prodData)
+          .then(function () { return loadProducts(); })
+          .then(function () {
+            closeProductModal();
+            refreshData();
+          })
+          .catch(function () { alert('Update failed. Please try again.'); });
       } else {
-        // Add new
-        var maxId = allProducts.reduce(function (max, p) { return Math.max(max, p.id); }, 0);
-        prodData.id = maxId + 1;
-        allProducts.push(prodData);
+        CaneAuth.createProduct(prodData)
+          .then(function () { return loadProducts(); })
+          .then(function () {
+            closeProductModal();
+            refreshData();
+          })
+          .catch(function () { alert('Create failed. Please try again.'); });
       }
-
-      saveProducts(allProducts);
-      closeProductModal();
-      refreshData();
     });
 
     // Init
