@@ -580,7 +580,15 @@ app.get('/api/test-firestore', async (req, res) => {
 
 // Fallback: serve index.html for all non-API routes (SPA fallback)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'main', 'index.html'));
+  const indexPath = path.join(__dirname, '..', 'main', 'index.html');
+  console.log('📄 Fallback route hit for:', req.path);
+  console.log('   Trying to serve:', indexPath);
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('❌ Error serving index.html:', err.message);
+      res.status(404).json({ success: false, message: 'File not found', path: indexPath });
+    }
+  });
 });
 
 // Start server
