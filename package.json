@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "cd backend && ln -s ../main public 2>/dev/null || true && npm start"
+    "start": "cd backend && npm start"
   },
   "dependencies": {
     "firebase": "^12.14.0"

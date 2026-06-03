@@ -11,21 +11,31 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
 // Serve frontend from backend/public if present, otherwise from ../main
 const candidatePublic = path.join(__dirname, 'public');
 const candidateMain = path.join(__dirname, '..', 'main');
+
+console.log('🔍 Looking for frontend:');
+console.log('   Candidate 1 (backend/public):', candidatePublic, '- exists:', fs.existsSync(candidatePublic));
+console.log('   Candidate 2 (../main):', candidateMain, '- exists:', fs.existsSync(candidateMain));
+
 let frontendDir = null;
 if (fs.existsSync(candidatePublic)) {
   frontendDir = candidatePublic;
+  console.log('✅ Using frontend from backend/public');
 } else if (fs.existsSync(candidateMain)) {
   frontendDir = candidateMain;
+  console.log('✅ Using frontend from ../main');
+} else {
+  console.warn('⚠️ WARNING: No frontend directory found at either location!');
 }
 
 if (frontendDir) {
   app.use(express.static(frontendDir));
-  console.log('📦 Serving frontend from:', frontendDir);
+  console.log('📦 Static middleware configured for:', frontendDir);
 } else {
-  console.warn('⚠️ No frontend directory found. Expected one of:', candidatePublic, candidateMain);
+  console.warn('⚠️ Frontend static serving may not work');
 }
 
 // Firebase services
