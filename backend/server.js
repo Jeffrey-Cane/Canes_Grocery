@@ -12,23 +12,28 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve frontend from backend/public if present, otherwise from ../main
+// Serve frontend from backend/public if present, otherwise from ../frontend (or ../main for backwards compat)
 const candidatePublic = path.join(__dirname, 'public');
+const candidateFrontend = path.join(__dirname, '..', 'frontend');
 const candidateMain = path.join(__dirname, '..', 'main');
 
 console.log('🔍 Looking for frontend:');
 console.log('   Candidate 1 (backend/public):', candidatePublic, '- exists:', fs.existsSync(candidatePublic));
-console.log('   Candidate 2 (../main):', candidateMain, '- exists:', fs.existsSync(candidateMain));
+console.log('   Candidate 2 (../frontend):', candidateFrontend, '- exists:', fs.existsSync(candidateFrontend));
+console.log('   Candidate 3 (../main):', candidateMain, '- exists:', fs.existsSync(candidateMain));
 
 let frontendDir = null;
 if (fs.existsSync(candidatePublic)) {
   frontendDir = candidatePublic;
   console.log('✅ Using frontend from backend/public');
+} else if (fs.existsSync(candidateFrontend)) {
+  frontendDir = candidateFrontend;
+  console.log('✅ Using frontend from ../frontend');
 } else if (fs.existsSync(candidateMain)) {
   frontendDir = candidateMain;
   console.log('✅ Using frontend from ../main');
 } else {
-  console.warn('⚠️ WARNING: No frontend directory found at either location!');
+  console.warn('⚠️ WARNING: No frontend directory found at any location!');
 }
 
 if (frontendDir) {
