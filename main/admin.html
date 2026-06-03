@@ -343,9 +343,37 @@
       } catch (e) { allProducts = []; }
     }
 
-    function refreshData() {
-      var orders = CaneAuth.getOrders();
-      var users = CaneAuth.getUsers();
+    async function refreshData() {
+      var recentBody = document.getElementById('recent-orders-body');
+      var allBody = document.getElementById('all-orders-body');
+      var custBody = document.getElementById('customers-table-body');
+      var prodBody = document.getElementById('products-table-body');
+
+      if (recentBody) recentBody.innerHTML = '<tr><td colspan="6" class="admin-table__empty">Loading orders...</td></tr>';
+      if (allBody) allBody.innerHTML = '<tr><td colspan="7" class="admin-table__empty">Loading orders...</td></tr>';
+      if (custBody) custBody.innerHTML = '<tr><td colspan="4" class="admin-table__empty">Loading customers...</td></tr>';
+      if (prodBody && allProducts.length === 0) prodBody.innerHTML = '<tr><td colspan="6" class="admin-table__empty">Loading products...</td></tr>';
+
+      var orders = [];
+      try {
+        orders = await CaneAuth.getAllOrders();
+      } catch (e) {
+        orders = [];
+      }
+
+      var users = {};
+      orders.forEach(function (o) {
+        var email = o.userEmail || o.email || '';
+        if (!email) return;
+        if (!users[email]) {
+          users[email] = {
+            name: o.userName || o.name || 'Customer',
+            email: email,
+            role: 'customer',
+            createdAt: o.createdAt || o.date || new Date().toISOString()
+          };
+        }
+      });
       // Stats
       var revenue = orders.reduce(function (s, o) { return s + (o.total || 0); }, 0);
       document.getElementById('stat-revenue').textContent = 'KSh ' + revenue.toLocaleString();
@@ -354,7 +382,6 @@
       document.getElementById('stat-products').textContent = allProducts.length;
 
       // Recent orders (dashboard)
-      var recentBody = document.getElementById('recent-orders-body');
       var recent = orders.slice(0, 5);
       if (recent.length === 0) {
         recentBody.innerHTML = '<tr><td colspan="6" class="admin-table__empty">No orders yet</td></tr>';
@@ -365,7 +392,6 @@
       }
 
       // All orders
-      var allBody = document.getElementById('all-orders-body');
       if (orders.length === 0) {
         allBody.innerHTML = '<tr><td colspan="7" class="admin-table__empty">No orders yet</td></tr>';
       } else {
@@ -375,17 +401,20 @@
       }
 
       // Products
-      var prodBody = document.getElementById('products-table-body');
       prodBody.innerHTML = allProducts.map(function (p) {
         var imgHtml = p.image ? '<img src="' + p.image + '" alt="">' : (p.emoji || '🛒');
         return '<tr><td><div class="product-row"><div class="product-row__img">' + imgHtml + '</div><strong>' + p.name + '</strong></div></td><td>' + p.category + '</td><td>KSh ' + p.price.toLocaleString() + '</td><td>' + p.unit + '</td><td>' + (p.badge || '—') + '</td><td><button class="action-btn" onclick="editProduct(' + p.id + ')">Edit</button> <button class="action-btn danger" onclick="deleteProduct(' + p.id + ')">Delete</button></td></tr>';
       }).join('');
 
       // Customers
-      var custBody = document.getElementById('customers-table-body');
-      custBody.innerHTML = users.map(function (u) {
+      var userList = Object.keys(users).map(function (k) { return users[k]; });
+      if (userList.length === 0) {
+        custBody.innerHTML = '<tr><td colspan="4" class="admin-table__empty">No customers yet</td></tr>';
+      } else {
+        custBody.innerHTML = userList.map(function (u) {
         return '<tr><td><strong>' + u.name + '</strong></td><td>' + u.email + '</td><td><span class="status-badge ' + (u.role === 'admin' ? 'processing' : 'delivered') + '">' + u.role + '</span></td><td>' + new Date(u.createdAt).toLocaleDateString() + '</td></tr>';
-      }).join('');
+        }).join('');
+      }
     }
 
     window.updateStatus = function (orderId, status) {

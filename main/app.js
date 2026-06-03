@@ -86,12 +86,19 @@
   }
 
   async function loadProducts() {
+    var grid = $('#products-grid');
+    if (grid) {
+      grid.innerHTML = '<div class="no-results"><div class="no-results__icon">⏳</div><div class="no-results__text">Loading products...</div><div class="no-results__sub">Please wait</div></div>';
+    }
     try {
       const res = await fetch('products.json');
       products = await res.json();
     } catch (e) {
       console.error('Failed to load products:', e);
       products = [];
+      if (grid) {
+        grid.innerHTML = '<div class="no-results"><div class="no-results__icon">⚠️</div><div class="no-results__text">Failed to load products</div><div class="no-results__sub">Please refresh the page</div></div>';
+      }
     }
   }
 
@@ -368,6 +375,7 @@
     if (placeOrderBtn) {
       placeOrderBtn.addEventListener('click', function (e) {
         e.preventDefault();
+        if (placeOrderBtn.disabled) return;
         var name = $('#checkout-name').value.trim();
         var email = $('#checkout-email').value.trim();
         var phone = $('#checkout-phone').value.trim();
@@ -377,6 +385,9 @@
           showToast('Please fill all required fields', '⚠️');
           return;
         }
+
+        placeOrderBtn.disabled = true;
+        placeOrderBtn.textContent = 'Processing...';
 
         // Check which payment method is selected
         var selectedMethod = 'paystack';
@@ -389,11 +400,20 @@
         } else {
           // Cash on Delivery — place order directly
           var orderId = 'CS-' + Date.now().toString(36).toUpperCase();
-          saveOrderRecord(orderId, name, email, phone, address, 'Cash on Delivery');
-          showConfirmation(orderId, 'cod');
-          cart = [];
-          saveCart();
-          updateCartBadge();
+          saveOrderRecord(orderId, name, email, phone, address, 'Cash on Delivery')
+            .then(function () {
+              showConfirmation(orderId, 'cod');
+              cart = [];
+              saveCart();
+              updateCartBadge();
+            })
+            .catch(function () {
+              showToast('Order save failed. Please try again.', '⚠️');
+            })
+            .finally(function () {
+              placeOrderBtn.disabled = false;
+              placeOrderBtn.textContent = 'Pay & Place Order';
+            });
         }
       });
     }
@@ -433,14 +453,31 @@
         var em = $('#checkout-email').value.trim();
         var ph = $('#checkout-phone').value.trim();
         var ad = $('#checkout-address').value.trim();
-        saveOrderRecord(response.reference, nm, em, ph, ad, 'Paystack');
-        showConfirmation(response.reference, 'paystack');
-        cart = [];
-        saveCart();
-        updateCartBadge();
-        showToast('Payment successful!', '✅');
+        var placeOrderBtn = $('#place-order-btn');
+        saveOrderRecord(response.reference, nm, em, ph, ad, 'Paystack')
+          .then(function () {
+            showConfirmation(response.reference, 'paystack');
+            cart = [];
+            saveCart();
+            updateCartBadge();
+            showToast('Payment successful!', '✅');
+          })
+          .catch(function () {
+            showToast('Payment succeeded, but order save failed.', '⚠️');
+          })
+          .finally(function () {
+            if (placeOrderBtn) {
+              placeOrderBtn.disabled = false;
+              placeOrderBtn.textContent = 'Pay & Place Order';
+            }
+          });
       },
       onClose: function () {
+        var placeOrderBtn = $('#place-order-btn');
+        if (placeOrderBtn) {
+          placeOrderBtn.disabled = false;
+          placeOrderBtn.textContent = 'Pay & Place Order';
+        }
         showToast('Payment cancelled', '⚠️');
       }
     });
@@ -476,10 +513,10 @@
   }
 
   function saveOrderRecord(orderId, name, email, phone, address, payment) {
-    if (typeof CaneAuth === 'undefined') return;
+    if (typeof CaneAuth === 'undefined') return Promise.reject('Auth not available');
     var total = getCartTotal();
     var delivery = total >= 2000 ? 0 : 200;
-    CaneAuth.saveOrder({
+    return CaneAuth.saveOrder({
       id: orderId,
       name: name,
       email: email,

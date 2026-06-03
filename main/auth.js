@@ -5,7 +5,14 @@
 (function () {
   'use strict';
 
-  const API_URL = 'http://localhost:3000/api';
+  function getApiBase() {
+    if (window.__CANE_API_URL) return window.__CANE_API_URL;
+    var meta = document.querySelector('meta[name="api-base"]');
+    if (meta && meta.content) return meta.content;
+    return 'http://localhost:3000/api';
+  }
+
+  const API_URL = getApiBase();
   let token = null;
   let currentUser = null;
 
