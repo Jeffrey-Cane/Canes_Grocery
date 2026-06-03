@@ -11,6 +11,7 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '..', 'main')));
 
 // Firebase services
 let db, auth;
@@ -516,6 +517,11 @@ app.get('/api/test-firestore', async (req, res) => {
     console.error('❌ Firestore test failed:', error.message);
     res.status(400).json({ success: false, message: error.message });
   }
+});
+
+// Fallback: serve index.html for all non-API routes (SPA fallback)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'main', 'index.html'));
 });
 
 // Start server
