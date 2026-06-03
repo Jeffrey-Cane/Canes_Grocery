@@ -31,6 +31,8 @@ console.log('  clientEmail:', serviceAccount.clientEmail);
 console.log('  privateKey exists:', !!serviceAccount.privateKey);
 console.log('  privateKey length:', serviceAccount.privateKey?.length);
 
+let firebaseInitialized = false;
+
 try {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -46,13 +48,25 @@ try {
   console.log('✅ Firebase Admin SDK initialized successfully');
   console.log('✅ Firestore database connected');
   console.log('✅ Auth service connected');
+  firebaseInitialized = true;
 } catch (error) {
   console.error('❌ Firebase initialization failed:', error.message);
-  process.exit(1);
+  console.error('⚠️  App will start but Firebase features will be unavailable');
+  console.error('⚠️  Make sure all Firebase environment variables are set in Render:');
+  console.error('   - FIREBASE_PROJECT_ID');
+  console.error('   - FIREBASE_CLIENT_EMAIL');
+  console.error('   - FIREBASE_PRIVATE_KEY');
+  console.error('   - FIREBASE_API_KEY');
+  console.error('   - JWT_SECRET');
 }
+
 
 // Middleware to verify JWT token
 const verifyToken = async (req, res, next) => {
+  if (!firebaseInitialized) {
+    return res.status(503).json({ success: false, message: 'Firebase not initialized. Check server logs.' });
+  }
+
   const token = req.headers.authorization?.split(' ')[1];
 
   if (!token) {
@@ -498,6 +512,18 @@ app.delete('/api/admin/products/:productId', verifyToken, requireAdmin, async (r
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
+});
+
+// ============ STATUS & HEALTH ROUTES ============
+
+// Status endpoint (works regardless of Firebase)
+app.get('/api/status', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Server is running',
+    firebaseInitialized: firebaseInitialized,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Health check
