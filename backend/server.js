@@ -11,7 +11,22 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '..', 'main')));
+// Serve frontend from backend/public if present, otherwise from ../main
+const candidatePublic = path.join(__dirname, 'public');
+const candidateMain = path.join(__dirname, '..', 'main');
+let frontendDir = null;
+if (fs.existsSync(candidatePublic)) {
+  frontendDir = candidatePublic;
+} else if (fs.existsSync(candidateMain)) {
+  frontendDir = candidateMain;
+}
+
+if (frontendDir) {
+  app.use(express.static(frontendDir));
+  console.log('📦 Serving frontend from:', frontendDir);
+} else {
+  console.warn('⚠️ No frontend directory found. Expected one of:', candidatePublic, candidateMain);
+}
 
 // Firebase services
 let db, auth;
@@ -580,8 +595,17 @@ app.get('/api/test-firestore', async (req, res) => {
 
 // Fallback: serve index.html for all non-API routes (SPA fallback)
 app.get('*', (req, res) => {
-  const indexPath = path.join(__dirname, '..', 'main', 'index.html');
+  // Don't override API routes
+  if (req.path.startsWith('/api/')) return res.status(404).json({ success: false, message: 'API endpoint not found' });
+
   console.log('📄 Fallback route hit for:', req.path);
+
+  if (!frontendDir) {
+    console.error('❌ No frontend directory available to serve');
+    return res.status(404).json({ success: false, message: 'Frontend not found on server' });
+  }
+
+  const indexPath = path.join(frontendDir, 'index.html');
   console.log('   Trying to serve:', indexPath);
   res.sendFile(indexPath, (err) => {
     if (err) {
