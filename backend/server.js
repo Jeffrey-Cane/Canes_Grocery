@@ -133,24 +133,44 @@ async function ensureProductsSeeded() {
 
 async function verifyEmailPassword(email, password) {
   if (!FIREBASE_API_KEY) {
+    console.error('❌ FIREBASE_API_KEY is missing');
     throw new Error('FIREBASE_API_KEY is missing');
   }
 
-  const res = await fetch(
-    `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, password: password, returnSecureToken: true })
-    }
-  );
+  console.log('🔐 Calling Firebase REST API for email/password verification...');
+  console.log('   Email:', email);
 
-  const data = await res.json();
-  if (!res.ok) {
-    const msg = data && data.error && data.error.message ? data.error.message : 'Invalid credentials';
-    throw new Error(msg);
+  try {
+    const res = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: password, returnSecureToken: true })
+      }
+    );
+
+    console.log('✅ Firebase API responded with status:', res.status);
+
+    const data = await res.json();
+    console.log('📊 Firebase response:', { 
+      success: res.ok, 
+      hasLocalId: !!data.localId,
+      hasError: !!data.error 
+    });
+
+    if (!res.ok) {
+      const errorMsg = data?.error?.message || 'Unknown error';
+      console.error('❌ Firebase API error:', errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    console.log('✅ Firebase authentication successful, uid:', data.localId);
+    return data;
+  } catch (fetchError) {
+    console.error('❌ Firebase API fetch error:', fetchError.message);
+    throw fetchError;
   }
-  return data;
 }
 
 // Register
@@ -238,14 +258,17 @@ app.post('/api/auth/login', async (req, res) => {
   }
 
   try {
+    console.log('🔐 Verifying email and password...');
     const signIn = await verifyEmailPassword(email, password);
     const uid = signIn.localId;
+    console.log('✅ Email/password verified, uid:', uid);
 
     console.log('📖 Fetching user profile from Firestore...');
     const userDoc = await db.collection('users').doc(uid).get();
 
     let userData = null;
     if (!userDoc.exists) {
+      console.log('⚠️  User doc does not exist in Firestore, creating fallback...');
       const fallbackName = signIn.displayName || (email ? email.split('@')[0] : 'User');
       userData = {
         id: uid,
@@ -256,12 +279,15 @@ app.post('/api/auth/login', async (req, res) => {
         phone: '',
         address: ''
       };
+      console.log('💾 Creating user doc in Firestore...');
       await db.collection('users').doc(uid).set(userData);
+      console.log('✅ User doc created in Firestore');
     } else {
       userData = userDoc.data();
+      console.log('✅ User profile loaded from Firestore');
     }
 
-    console.log('✅ User profile loaded:', userData.name);
+    console.log('✅ User profile:', userData.name, '(' + userData.email + ')');
 
     // Generate JWT token
     const token = jwt.sign({ uid: uid }, process.env.JWT_SECRET, {
@@ -276,11 +302,18 @@ app.post('/api/auth/login', async (req, res) => {
       token: token
     });
   } catch (error) {
-    console.error('❌ Login error:', error.code, error.message);
-    let message = 'Login failed';
-    if (error.message === 'EMAIL_NOT_FOUND') message = 'Email not found';
-    if (error.message === 'INVALID_PASSWORD') message = 'Incorrect password';
-    if (error.message === 'FIREBASE_API_KEY is missing') message = 'Server is missing Firebase API key';
+    console.error('❌ Login error:', error.message);
+    let message = error.message || 'Login failed';
+    
+    // Map Firebase error messages to user-friendly messages
+    if (message.includes('EMAIL_NOT_FOUND') || message.includes('not found')) {
+      message = 'Email not found';
+    } else if (message.includes('INVALID_PASSWORD') || message.includes('password')) {
+      message = 'Incorrect password';
+    } else if (message.includes('FIREBASE_API_KEY')) {
+      message = 'Server configuration error (missing API key)';
+    }
+    
     res.status(400).json({ success: false, message: message, error: error.message });
   }
 });
